@@ -1,0 +1,9 @@
+﻿node_modules/
+dist/
+.vscode/
+.idea/
+*.log
+vite-preview.log
+vite-preview.err.log
+.DS_Store
+Thumbs.db
