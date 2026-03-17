@@ -78,12 +78,39 @@ const figureCards = [
   ["李世石", "AI 分水岭", "与 AlphaGo 的对局成为全球焦点。"],
 ];
 
+const THEME_OPTIONS = [
+  {
+    id: "classroom",
+    label: "明亮课堂",
+    shortLabel: "课堂",
+    pdfBackground: "#f2e4cf",
+  },
+  {
+    id: "ink",
+    label: "东方雅墨",
+    shortLabel: "雅墨",
+    pdfBackground: "#1b1512",
+  },
+  {
+    id: "aurora",
+    label: "清新科技",
+    shortLabel: "科技",
+    pdfBackground: "#dfeaf6",
+  },
+];
+
+const DEFAULT_THEME = THEME_OPTIONS[0].id;
+
 function App() {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [isAutoplay, setIsAutoplay] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") return DEFAULT_THEME;
+    return window.localStorage.getItem("presentation-theme") || DEFAULT_THEME;
+  });
   const [selectedCardId, setSelectedCardId] = useState("");
   const lockRef = useRef(false);
   const stageRef = useRef(null);
@@ -91,6 +118,10 @@ function App() {
 
   const active = slideMeta[index];
   const progress = useMemo(() => ((index + 1) / slideMeta.length) * 100, [index]);
+  const currentTheme = useMemo(
+    () => THEME_OPTIONS.find((option) => option.id === theme) || THEME_OPTIONS[0],
+    [theme],
+  );
 
   const goTo = (next) => {
     if (next === index || next < 0 || next >= slideMeta.length) return;
@@ -118,6 +149,10 @@ function App() {
     document.addEventListener("fullscreenchange", onFullscreen);
     return () => document.removeEventListener("fullscreenchange", onFullscreen);
   }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("presentation-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -194,7 +229,7 @@ function App() {
 
       for (let i = 0; i < pages.length; i += 1) {
         const canvas = await html2canvas(pages[i], {
-          backgroundColor: "#f2e4cf",
+          backgroundColor: currentTheme.pdfBackground,
           scale: 2,
           useCORS: true,
           logging: false,
@@ -245,14 +280,14 @@ function App() {
 
   return (
     <>
-      <div className="presentation-shell screen-only min-h-screen overflow-hidden bg-ink text-white">
+      <div className={`presentation-shell theme-shell theme-${theme} screen-only min-h-screen overflow-hidden bg-ink text-white`}>
         <Backdrop />
         <div className="presentation-center relative z-10 flex min-h-screen items-center justify-center px-6 py-6 lg:px-10">
           <div className="stage-frame relative w-full max-w-[1600px]" ref={stageRef}>
             <div className="top-progress-line pointer-events-none absolute left-3 right-3 top-3 h-[3px] overflow-visible rounded-full bg-white/12">
               <motion.div animate={{ width: `${progress}%` }} className="top-progress-fill h-full rounded-full bg-gradient-to-r from-[var(--paper)] via-[var(--paper)] to-[var(--accent)]" transition={{ duration: 0.6 }} />
             </div>
-            <div className="relative aspect-[16/9] overflow-hidden rounded-[36px] border border-white/35 bg-[rgba(176,132,97,0.22)] shadow-glow backdrop-blur-sm" onClick={handleStageClick} role="presentation">
+            <div className="theme-stage-surface relative aspect-[16/9] overflow-hidden rounded-[36px] border border-white/35 bg-[rgba(176,132,97,0.22)] shadow-glow backdrop-blur-sm" onClick={handleStageClick} role="presentation">
               <StageDecor />
               <GoTransitionLayer slideKey={active.id} direction={direction} />
               <LeftLabel label={active.label} />
@@ -264,6 +299,8 @@ function App() {
                 onFullscreen={toggleFullscreen}
                 onPrint={handlePdfExport}
                 isExporting={isExporting}
+                theme={theme}
+                onThemeChange={setTheme}
               />
               <div className="absolute inset-0 z-10 pl-20 pr-24">
                 <AnimatePresence initial={false} mode="wait" custom={direction}>
@@ -277,15 +314,15 @@ function App() {
           </div>
         </div>
       </div>
-      <PrintDeck />
-      <PdfCaptureDeck pageRefs={exportPageRefs} />
+      <PrintDeck theme={theme} />
+      <PdfCaptureDeck pageRefs={exportPageRefs} theme={theme} />
     </>
   );
 }
 
-function PdfCaptureDeck({ pageRefs }) {
+function PdfCaptureDeck({ pageRefs, theme }) {
   return (
-    <div className="pdf-capture-deck" aria-hidden="true">
+    <div className={`pdf-capture-deck theme-shell theme-${theme}`} aria-hidden="true">
       {slideMeta.map((slide, idx) => (
         <section
           key={`capture-${slide.id}`}
@@ -310,9 +347,9 @@ function PdfCaptureDeck({ pageRefs }) {
   );
 }
 
-function PrintDeck() {
+function PrintDeck({ theme }) {
   return (
-    <div className="print-only print-deck">
+    <div className={`print-only print-deck theme-shell theme-${theme}`}>
       {slideMeta.map((slide, idx) => (
         <section key={slide.id} className="print-slide">
           <div className="print-slide-inner">
@@ -374,10 +411,10 @@ function GoTransitionLayer({ slideKey, direction }) {
 
 function Backdrop() {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,240,214,0.9),_transparent_36%),radial-gradient(circle_at_78%_26%,_rgba(240,138,93,0.18),_transparent_28%),radial-gradient(circle_at_20%_80%,_rgba(223,244,234,0.42),_transparent_26%),linear-gradient(135deg,_#fffaf1_0%,_#fff1db_48%,_#fde2c3_100%)]" />
-      <div className="absolute inset-x-0 top-[-18%] h-[42rem] rounded-full bg-[rgba(255,228,183,0.36)] blur-3xl" />
-      <div className="absolute bottom-[-20%] right-[-8%] h-[36rem] w-[36rem] rounded-full bg-[rgba(240,138,93,0.18)] blur-3xl" />
+    <div className="theme-backdrop pointer-events-none absolute inset-0 overflow-hidden">
+      <div className="theme-backdrop-base absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,240,214,0.9),_transparent_36%),radial-gradient(circle_at_78%_26%,_rgba(240,138,93,0.18),_transparent_28%),radial-gradient(circle_at_20%_80%,_rgba(223,244,234,0.42),_transparent_26%),linear-gradient(135deg,_#fffaf1_0%,_#fff1db_48%,_#fde2c3_100%)]" />
+      <div className="theme-backdrop-top absolute inset-x-0 top-[-18%] h-[42rem] rounded-full bg-[rgba(255,228,183,0.36)] blur-3xl" />
+      <div className="theme-backdrop-bottom absolute bottom-[-20%] right-[-8%] h-[36rem] w-[36rem] rounded-full bg-[rgba(240,138,93,0.18)] blur-3xl" />
     </div>
   );
 }
@@ -385,11 +422,11 @@ function Backdrop() {
 function StageDecor() {
   return (
     <>
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.22),transparent_18%,transparent_82%,rgba(255,255,255,0.12))]" />
-      <div className="absolute right-[12%] top-[12%] h-56 w-56 rounded-full border border-white/40 opacity-25" />
-      <div className="absolute bottom-[10%] left-[10%] h-40 w-40 rounded-full border border-[rgba(240,138,93,0.2)] opacity-40" />
-      <div className="absolute bottom-[-6%] right-[22%] h-56 w-56 rounded-full bg-[rgba(240,138,93,0.15)] blur-3xl" />
-      <div className="absolute left-[15%] top-[18%] h-32 w-32 rounded-full bg-[rgba(223,244,234,0.45)] blur-3xl" />
+      <div className="theme-stage-wash absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.22),transparent_18%,transparent_82%,rgba(255,255,255,0.12))]" />
+      <div className="theme-stage-ring-a absolute right-[12%] top-[12%] h-56 w-56 rounded-full border border-white/40 opacity-25" />
+      <div className="theme-stage-ring-b absolute bottom-[10%] left-[10%] h-40 w-40 rounded-full border border-[rgba(240,138,93,0.2)] opacity-40" />
+      <div className="theme-stage-glow-a absolute bottom-[-6%] right-[22%] h-56 w-56 rounded-full bg-[rgba(240,138,93,0.15)] blur-3xl" />
+      <div className="theme-stage-glow-b absolute left-[15%] top-[18%] h-32 w-32 rounded-full bg-[rgba(223,244,234,0.45)] blur-3xl" />
       <div className="board-pattern absolute bottom-10 right-14 h-40 w-40 opacity-30" />
     </>
   );
@@ -397,8 +434,8 @@ function StageDecor() {
 
 function LeftLabel({ label }) {
   return (
-    <div className="absolute inset-y-0 left-0 flex w-20 items-center justify-center border-r border-white/20 bg-[rgba(255,250,241,0.2)]">
-      <div className="flex flex-col items-center gap-4 text-[10px] uppercase tracking-[0.6em] text-[rgba(95,66,48,0.45)] [writing-mode:vertical-rl]">
+    <div className="label-rail absolute inset-y-0 left-0 flex w-20 items-center justify-center border-r border-white/20 bg-[rgba(255,250,241,0.2)]">
+      <div className="label-rail-text flex flex-col items-center gap-4 text-[10px] uppercase tracking-[0.6em] text-[rgba(95,66,48,0.45)] [writing-mode:vertical-rl]">
         <span>World History of Go</span>
         <span className="text-[rgba(95,66,48,0.72)]">{label}</span>
       </div>
@@ -410,7 +447,7 @@ function TopInfo({ active, index }) {
   return (
     <>
       <div className="absolute left-24 top-6 z-30">
-        <div className="rounded-[20px] border border-white/40 bg-[rgba(244,231,210,0.88)] px-4 py-2.5 shadow-[0_12px_28px_rgba(240,138,93,0.12)] backdrop-blur-md">
+        <div className="top-info-card rounded-[20px] border border-white/40 bg-[rgba(244,231,210,0.88)] px-4 py-2.5 shadow-[0_12px_28px_rgba(240,138,93,0.12)] backdrop-blur-md">
           <p className="text-[10px] uppercase tracking-[0.42em] text-[rgba(95,66,48,0.42)]">Now Showing</p>
           <p className="mt-1.5 font-display text-[1.6rem] text-[rgba(91,61,42,0.9)]">{active.kicker}</p>
           <p className="mt-1.5 max-w-[24rem] text-[13px] leading-5 text-[rgba(91,61,42,0.62)]">{active.summary}</p>
@@ -431,7 +468,7 @@ function ExportTopInfo({ active }) {
   return (
     <>
       <div className="absolute left-24 top-6 z-30">
-        <div className="rounded-[20px] border border-white/40 bg-[rgba(244,231,210,0.9)] px-4 py-2.5 shadow-[0_10px_30px_rgba(240,138,93,0.12)]">
+        <div className="export-top-info-card rounded-[20px] border border-white/40 bg-[rgba(244,231,210,0.9)] px-4 py-2.5 shadow-[0_10px_30px_rgba(240,138,93,0.12)]">
           <p className="text-[10px] uppercase tracking-[0.42em] text-[rgba(95,66,48,0.42)]">Now Showing</p>
           <p className="mt-1.5 font-display text-[1.6rem] text-[rgba(91,61,42,0.9)]">{active.kicker}</p>
           <p className="mt-1.5 max-w-[24rem] text-[13px] leading-5 text-[rgba(91,61,42,0.62)]">{active.summary}</p>
@@ -441,9 +478,9 @@ function ExportTopInfo({ active }) {
     </>
   );
 }
-function ControlPanel({ isAutoplay, isFullscreen, onAutoplay, onFullscreen, onPrint, isExporting }) {
+function ControlPanel({ isAutoplay, isFullscreen, onAutoplay, onFullscreen, onPrint, isExporting, theme, onThemeChange }) {
   return (
-    <div className="absolute right-6 top-24 z-30 flex flex-col gap-3">
+    <div className="theme-control-panel absolute right-6 top-24 z-30 flex flex-col gap-3">
       <button className="control-chip" onClick={onAutoplay} type="button">
         <span className={`status-dot ${isAutoplay ? "status-dot-active" : ""}`} />
         {isAutoplay ? "Pause Auto" : "Auto Play"}
@@ -452,6 +489,22 @@ function ControlPanel({ isAutoplay, isFullscreen, onAutoplay, onFullscreen, onPr
         {isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
       </button>
       <button className="control-chip" onClick={onPrint} type="button">{isExporting ? "导出中..." : "导出 PDF"}</button>
+      <div className="theme-picker rounded-[22px] border border-white/30 bg-white/10 p-3 backdrop-blur-md">
+        <p className="theme-picker-label text-[10px] uppercase tracking-[0.32em] text-white/50">风格选择</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {THEME_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              className={`theme-chip ${theme === option.id ? "theme-chip-active" : ""}`}
+              onClick={() => onThemeChange(option.id)}
+              type="button"
+            >
+              <span className={`theme-chip-swatch theme-chip-swatch-${option.id}`} />
+              {option.shortLabel}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -863,6 +916,14 @@ function EndingSlide() {
 }
 
 export default App;
+
+
+
+
+
+
+
+
 
 
 
