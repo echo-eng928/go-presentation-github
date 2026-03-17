@@ -1,3 +1,6 @@
+## Live Demo
+
+[View Online](https://shhd-presentation-github-348c.vercel.app/)
 # 世界围棋发展史｜Go Presentation
 
 一个关于**世界围棋发展史**的交互式网页展示项目，内容涵盖围棋的起源、传播、规则演变，以及著名棋手的生平与时代影响。
