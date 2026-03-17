@@ -81,21 +81,15 @@ const figureCards = [
 const THEME_OPTIONS = [
   {
     id: "classroom",
-    label: "明亮课堂",
-    shortLabel: "课堂",
+    label: "????",
+    shortLabel: "??",
     pdfBackground: "#f2e4cf",
   },
   {
     id: "ink",
-    label: "东方雅墨",
-    shortLabel: "雅墨",
+    label: "????",
+    shortLabel: "??",
     pdfBackground: "#1b1512",
-  },
-  {
-    id: "aurora",
-    label: "清新科技",
-    shortLabel: "科技",
-    pdfBackground: "#dfeaf6",
   },
 ];
 
