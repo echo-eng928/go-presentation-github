@@ -81,14 +81,14 @@ const figureCards = [
 const THEME_OPTIONS = [
   {
     id: "classroom",
-    label: "????",
-    shortLabel: "??",
+    label: "明亮课堂",
+    shortLabel: "课堂",
     pdfBackground: "#f2e4cf",
   },
   {
     id: "ink",
-    label: "????",
-    shortLabel: "??",
+    label: "东方雅墨",
+    shortLabel: "雅墨",
     pdfBackground: "#1b1512",
   },
 ];
@@ -196,18 +196,13 @@ function App() {
       return undefined;
     }
 
-    revealControls(true);
-
-    const onPointerActivity = () => {
-      revealControls(true);
-    };
-
-    window.addEventListener("mousemove", onPointerActivity, { passive: true });
-    window.addEventListener("touchstart", onPointerActivity, { passive: true });
+    setAreControlsVisible(true);
+    clearControlsHideTimer();
+    controlsHideTimerRef.current = window.setTimeout(() => {
+      setAreControlsVisible(false);
+    }, 2000);
 
     return () => {
-      window.removeEventListener("mousemove", onPointerActivity);
-      window.removeEventListener("touchstart", onPointerActivity);
       clearControlsHideTimer();
     };
   }, [isFullscreen]);
