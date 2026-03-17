@@ -1083,3 +1083,214 @@ body {
 .theme-chip-swatch-aurora {
   background: linear-gradient(135deg, #edf5ff, #6aa9ff);
 }
+
+
+.presentation-stage-frame {
+  width: min(100%, 1600px);
+}
+
+@media (max-width: 1180px), (max-height: 760px) {
+  body {
+    overscroll-behavior: none;
+  }
+
+  .presentation-center-compact {
+    padding: 0.75rem;
+  }
+
+  .presentation-stage-frame-compact {
+    width: min(100%, calc((100dvh - 1.5rem) * 16 / 9));
+    max-width: calc(100dvw - 1.5rem);
+    margin: 0 auto;
+  }
+
+  .presentation-stage-surface-compact {
+    border-radius: 1.5rem !important;
+  }
+
+  .slide-stage-content-compact {
+    padding-left: 3rem !important;
+    padding-right: 3rem !important;
+  }
+
+  .slide-frame-base {
+    padding: 1.6rem !important;
+  }
+
+  .slide-frame-header {
+    margin-top: 4.5rem !important;
+    margin-bottom: 1.1rem !important;
+    max-width: 28rem !important;
+  }
+
+  .slide-frame-base h2 {
+    font-size: 1.7rem !important;
+  }
+
+  .slide-frame-base p,
+  .slide-frame-base li {
+    font-size: 0.78rem;
+    line-height: 1.45rem;
+  }
+
+  .top-info-card {
+    max-width: 14rem;
+  }
+
+  .slide-index p:last-child {
+    font-size: 1rem !important;
+  }
+
+  .theme-control-panel {
+    max-width: calc(100% - 2rem);
+  }
+
+  .theme-control-panel .control-chip,
+  .theme-control-panel .theme-chip {
+    padding: 0.55rem 0.75rem;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+  }
+
+  .theme-control-panel .theme-picker {
+    width: 100%;
+    padding: 0.7rem;
+  }
+
+  .theme-control-panel .theme-picker-label {
+    font-size: 0.56rem;
+  }
+
+  .navigation-dots {
+    max-width: calc(100% - 4rem);
+  }
+
+  .label-rail {
+    backdrop-filter: blur(10px);
+  }
+
+  .theme-stage-surface .board-pattern {
+    bottom: 1rem;
+    right: 1rem;
+    height: 4.5rem;
+    width: 4.5rem;
+  }
+
+  .theme-stage-surface .theme-stage-ring-a {
+    height: 8rem;
+    width: 8rem;
+  }
+
+  .theme-stage-surface .theme-stage-ring-b {
+    height: 5rem;
+    width: 5rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .presentation-shell::before {
+    inset: 0.5rem;
+    border-radius: 1.2rem;
+  }
+
+  .presentation-center-compact {
+    padding: 0.5rem;
+  }
+
+  .presentation-stage-frame-compact {
+    width: min(100%, calc((100dvh - 1rem) * 16 / 9));
+    max-width: calc(100dvw - 1rem);
+  }
+
+  .slide-stage-content-compact {
+    padding-left: 2.35rem !important;
+    padding-right: 2.35rem !important;
+  }
+
+  .slide-frame-base {
+    padding: 1rem !important;
+  }
+
+  .slide-frame-header {
+    margin-top: 3.9rem !important;
+    max-width: 16rem !important;
+  }
+
+  .slide-frame-base h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .slide-frame-base p,
+  .slide-frame-base li {
+    font-size: 0.68rem;
+    line-height: 1.25rem;
+  }
+
+  .media-placeholder {
+    min-height: 6rem;
+    border-radius: 1.1rem;
+  }
+
+  .media-placeholder-content {
+    min-height: 5.75rem;
+    padding: 0.7rem;
+  }
+
+  .media-placeholder h4 {
+    font-size: 0.86rem;
+  }
+
+  .media-placeholder p {
+    font-size: 0.64rem;
+    line-height: 1.2rem;
+  }
+
+  .theme-control-panel {
+    gap: 0.5rem;
+  }
+
+  .theme-control-panel .control-chip,
+  .theme-control-panel .theme-chip {
+    padding: 0.45rem 0.62rem;
+    font-size: 0.6rem;
+  }
+
+  .theme-control-panel .theme-picker {
+    border-radius: 1rem;
+  }
+
+  .navigation-dots {
+    bottom: 4.45rem !important;
+  }
+
+  .mobile-viewport-notice {
+    backdrop-filter: blur(16px);
+    background: linear-gradient(180deg, rgba(250, 238, 219, 0.3), rgba(248, 220, 192, 0.55));
+  }
+
+  .mobile-viewport-card .control-chip {
+    width: 100%;
+    justify-content: center;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .presentation-stage-frame-compact,
+  .presentation-stage-surface-compact,
+  .slide-stage-content-compact,
+  .navigation-dots,
+  .theme-control-panel,
+  .top-progress-line,
+  .label-rail,
+  .top-info-wrap,
+  .slide-index {
+    visibility: hidden;
+  }
+
+  .presentation-shell {
+    overflow: hidden;
+  }
+}

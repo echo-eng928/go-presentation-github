@@ -107,6 +107,10 @@ function App() {
   const [isAutoplay, setIsAutoplay] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [viewport, setViewport] = useState(() => ({
+    width: typeof window === "undefined" ? 1600 : window.innerWidth,
+    height: typeof window === "undefined" ? 900 : window.innerHeight,
+  }));
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") return DEFAULT_THEME;
     return window.localStorage.getItem("presentation-theme") || DEFAULT_THEME;
@@ -122,6 +126,9 @@ function App() {
     () => THEME_OPTIONS.find((option) => option.id === theme) || THEME_OPTIONS[0],
     [theme],
   );
+  const isCompactViewport = viewport.width <= 1180 || viewport.height <= 760;
+  const isMobileViewport = viewport.width <= 900;
+  const isPortraitMobile = isMobileViewport && viewport.height > viewport.width;
 
   const goTo = (next) => {
     if (next === index || next < 0 || next >= slideMeta.length) return;
@@ -148,6 +155,19 @@ function App() {
     const onFullscreen = () => setIsFullscreen(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", onFullscreen);
     return () => document.removeEventListener("fullscreenchange", onFullscreen);
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => {
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {
@@ -282,16 +302,16 @@ function App() {
     <>
       <div className={`presentation-shell theme-shell theme-${theme} screen-only min-h-screen overflow-hidden bg-ink text-white`}>
         <Backdrop />
-        <div className="presentation-center relative z-10 flex min-h-screen items-center justify-center px-6 py-6 lg:px-10">
-          <div className="stage-frame relative w-full max-w-[1600px]" ref={stageRef}>
+        <div className={`presentation-center relative z-10 flex min-h-screen items-center justify-center px-6 py-6 lg:px-10 ${isCompactViewport ? "presentation-center-compact" : ""}`}>
+          <div className={`stage-frame presentation-stage-frame relative w-full max-w-[1600px] ${isCompactViewport ? "presentation-stage-frame-compact" : ""}`} ref={stageRef}>
             <div className="top-progress-line pointer-events-none absolute left-3 right-3 top-3 h-[3px] overflow-visible rounded-full bg-white/12">
               <motion.div animate={{ width: `${progress}%` }} className="top-progress-fill h-full rounded-full bg-gradient-to-r from-[var(--paper)] via-[var(--paper)] to-[var(--accent)]" transition={{ duration: 0.6 }} />
             </div>
-            <div className="theme-stage-surface relative aspect-[16/9] overflow-hidden rounded-[36px] border border-white/35 bg-[rgba(176,132,97,0.22)] shadow-glow backdrop-blur-sm" onClick={handleStageClick} role="presentation">
+            <div className={`theme-stage-surface presentation-stage-surface relative aspect-[16/9] overflow-hidden rounded-[36px] border border-white/35 bg-[rgba(176,132,97,0.22)] shadow-glow backdrop-blur-sm ${isCompactViewport ? "presentation-stage-surface-compact" : ""}`} onClick={handleStageClick} role="presentation">
               <StageDecor />
               <GoTransitionLayer slideKey={active.id} direction={direction} />
-              <LeftLabel label={active.label} />
-              <TopInfo active={active} index={index} />
+              <LeftLabel label={active.label} compact={isCompactViewport} />
+              <TopInfo active={active} index={index} compact={isCompactViewport} />
               <ControlPanel
                 isAutoplay={isAutoplay}
                 isFullscreen={isFullscreen}
@@ -301,18 +321,28 @@ function App() {
                 isExporting={isExporting}
                 theme={theme}
                 onThemeChange={setTheme}
+                compact={isCompactViewport}
               />
-              <div className="absolute inset-0 z-10 pl-20 pr-24">
+              <div className={`slide-stage-content absolute inset-0 z-10 pl-20 pr-24 ${isCompactViewport ? "slide-stage-content-compact" : ""}`}>
                 <AnimatePresence initial={false} mode="wait" custom={direction}>
                   <motion.div key={active.id} custom={direction} variants={pageVariants} initial="enter" animate="center" exit="exit" className="h-full w-full">
                     <SlideRenderer index={index} selectedCardId={selectedCardId} />
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <NavigationDots current={index} onSelect={goTo} />
+              <NavigationDots current={index} onSelect={goTo} compact={isCompactViewport} />
             </div>
           </div>
         </div>
+        {isPortraitMobile ? (
+          <MobileViewportNotice
+            active={active}
+            current={index}
+            total={slideMeta.length}
+            onNext={() => step(1)}
+            onPrev={() => step(-1)}
+          />
+        ) : null}
       </div>
       <PrintDeck theme={theme} />
       <PdfCaptureDeck pageRefs={exportPageRefs} theme={theme} />
@@ -432,28 +462,28 @@ function StageDecor() {
   );
 }
 
-function LeftLabel({ label }) {
+function LeftLabel({ label, compact = false }) {
   return (
-    <div className="label-rail absolute inset-y-0 left-0 flex w-20 items-center justify-center border-r border-white/20 bg-[rgba(255,250,241,0.2)]">
-      <div className="label-rail-text flex flex-col items-center gap-4 text-[10px] uppercase tracking-[0.6em] text-[rgba(95,66,48,0.45)] [writing-mode:vertical-rl]">
-        <span>World History of Go</span>
+    <div className={`label-rail absolute inset-y-0 left-0 flex items-center justify-center border-r border-white/20 bg-[rgba(255,250,241,0.2)] ${compact ? "w-12" : "w-20"}`}>
+      <div className={`label-rail-text flex flex-col items-center text-[10px] uppercase text-[rgba(95,66,48,0.45)] [writing-mode:vertical-rl] ${compact ? "gap-2 tracking-[0.35em]" : "gap-4 tracking-[0.6em]"}`}>
+        {!compact ? <span>World History of Go</span> : null}
         <span className="text-[rgba(95,66,48,0.72)]">{label}</span>
       </div>
     </div>
   );
 }
 
-function TopInfo({ active, index }) {
+function TopInfo({ active, index, compact = false }) {
   return (
     <>
-      <div className="absolute left-24 top-6 z-30">
-        <div className="top-info-card rounded-[20px] border border-white/40 bg-[rgba(244,231,210,0.88)] px-4 py-2.5 shadow-[0_12px_28px_rgba(240,138,93,0.12)] backdrop-blur-md">
+      <div className={`top-info-wrap absolute z-30 ${compact ? "left-14 top-4" : "left-24 top-6"}`}>
+        <div className={`top-info-card rounded-[20px] border border-white/40 bg-[rgba(244,231,210,0.88)] shadow-[0_12px_28px_rgba(240,138,93,0.12)] backdrop-blur-md ${compact ? "px-3 py-2" : "px-4 py-2.5"}`}>
           <p className="text-[10px] uppercase tracking-[0.42em] text-[rgba(95,66,48,0.42)]">Now Showing</p>
-          <p className="mt-1.5 font-display text-[1.6rem] text-[rgba(91,61,42,0.9)]">{active.kicker}</p>
-          <p className="mt-1.5 max-w-[24rem] text-[13px] leading-5 text-[rgba(91,61,42,0.62)]">{active.summary}</p>
+          <p className={`mt-1.5 font-display text-[rgba(91,61,42,0.9)] ${compact ? "text-[1.1rem]" : "text-[1.6rem]"}`}>{active.kicker}</p>
+          <p className={`mt-1.5 text-[rgba(91,61,42,0.62)] ${compact ? "max-w-[14rem] text-[11px] leading-4" : "max-w-[24rem] text-[13px] leading-5"}`}>{active.summary}</p>
         </div>
       </div>
-      <div className="absolute right-6 top-6 z-30 text-right">
+      <div className={`slide-index absolute z-30 text-right ${compact ? "right-4 top-4" : "right-6 top-6"}`}>
         <p className="text-[10px] uppercase tracking-[0.45em] text-[rgba(95,66,48,0.4)]">Slide</p>
         <p className="text-xl font-light text-[rgba(91,61,42,0.88)]">
           {String(index + 1).padStart(2, "0")}
@@ -478,9 +508,9 @@ function ExportTopInfo({ active }) {
     </>
   );
 }
-function ControlPanel({ isAutoplay, isFullscreen, onAutoplay, onFullscreen, onPrint, isExporting, theme, onThemeChange }) {
+function ControlPanel({ isAutoplay, isFullscreen, onAutoplay, onFullscreen, onPrint, isExporting, theme, onThemeChange, compact = false }) {
   return (
-    <div className="theme-control-panel absolute right-6 top-24 z-30 flex flex-col gap-3">
+    <div className={`theme-control-panel absolute z-30 flex gap-3 ${compact ? "left-4 right-4 bottom-4 flex-row flex-wrap items-start justify-start" : "right-6 top-24 flex-col"}`}>
       <button className="control-chip" onClick={onAutoplay} type="button">
         <span className={`status-dot ${isAutoplay ? "status-dot-active" : ""}`} />
         {isAutoplay ? "Pause Auto" : "Auto Play"}
@@ -509,15 +539,15 @@ function ControlPanel({ isAutoplay, isFullscreen, onAutoplay, onFullscreen, onPr
   );
 }
 
-function NavigationDots({ current, onSelect }) {
+function NavigationDots({ current, onSelect, compact = false }) {
   return (
-    <div className="absolute right-7 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-3">
+    <div className={`navigation-dots absolute z-30 flex gap-3 ${compact ? "bottom-[5.2rem] left-1/2 -translate-x-1/2 flex-row items-center" : "right-7 top-1/2 -translate-y-1/2 flex-col"}`}>
       {slideMeta.map((slide, idx) => (
         <button key={slide.id} aria-label={`jump-${slide.id}`} className="group flex items-center justify-end gap-3" onClick={() => onSelect(idx)} type="button">
-          <span className={`text-[10px] uppercase tracking-[0.35em] transition ${current === idx ? "text-[var(--paper)]" : "text-white/0 group-hover:text-white/45"}`}>
+          <span className={`text-[10px] uppercase tracking-[0.35em] transition ${compact ? "hidden" : ""} ${current === idx ? "text-[var(--paper)]" : "text-white/0 group-hover:text-white/45"}`}>
             {String(idx + 1).padStart(2, "0")}
           </span>
-          <span className={`block rounded-full transition-all duration-300 ${current === idx ? "h-8 w-[3px] bg-[var(--paper)] shadow-[0_0_24px_rgba(237,235,237,0.4)]" : "h-3 w-[3px] bg-white/25 group-hover:h-5"}`} />
+          <span className={`block rounded-full transition-all duration-300 ${compact ? (current === idx ? "h-[3px] w-7 bg-[var(--paper)] shadow-[0_0_18px_rgba(237,235,237,0.35)]" : "h-[3px] w-3 bg-white/25 group-hover:w-5") : (current === idx ? "h-8 w-[3px] bg-[var(--paper)] shadow-[0_0_24px_rgba(237,235,237,0.4)]" : "h-3 w-[3px] bg-white/25 group-hover:h-5")}`} />
         </button>
       ))}
     </div>
@@ -542,14 +572,40 @@ function SlideRenderer({ index, selectedCardId, exportMode = false }) {
 
 function SlideFrame({ eyebrow, title, subtitle, children, className = "" }) {
   return (
-    <motion.section variants={containerVariants} initial="hidden" animate="show" className={`flex h-full flex-col px-12 py-12 ${className}`}>
-      <motion.div variants={itemVariants} className="mb-8 mt-20 max-w-4xl">
+    <motion.section variants={containerVariants} initial="hidden" animate="show" className={`slide-frame-base flex h-full flex-col px-12 py-12 ${className}`}>
+      <motion.div variants={itemVariants} className="slide-frame-header mb-8 mt-20 max-w-4xl">
         {eyebrow ? <p className="mb-3 text-[11px] uppercase tracking-[0.42em] text-[var(--paper)]/75">{eyebrow}</p> : null}
         <h2 className="font-display text-[2.35rem] leading-[1.08] text-white md:text-[2.8rem]">{title}</h2>
         {subtitle ? <p className="mt-3 max-w-[42rem] text-[15px] leading-6 text-white/70">{subtitle}</p> : null}
       </motion.div>
       <div className="flex-1">{children}</div>
     </motion.section>
+  );
+}
+
+function MobileViewportNotice({ active, current, total, onNext, onPrev }) {
+  return (
+    <div className="mobile-viewport-notice absolute inset-0 z-40 flex items-center justify-center px-5 py-6">
+      <div className="mobile-viewport-card w-full max-w-sm rounded-[28px] border border-white/40 bg-[rgba(255,248,236,0.94)] p-5 shadow-[0_24px_60px_rgba(125,84,57,0.18)] backdrop-blur-xl">
+        <p className="text-[11px] uppercase tracking-[0.34em] text-[rgba(95,66,48,0.45)]">Mobile View</p>
+        <h3 className="mt-3 font-display text-[1.7rem] leading-tight text-[rgba(91,61,42,0.92)]">??????</h3>
+        <p className="mt-3 text-[14px] leading-6 text-[rgba(91,61,42,0.68)]">
+          ???? 16:9 ??????? 14 Pro Max ????????????????????? PPT ???
+        </p>
+        <div className="mt-5 rounded-[22px] border border-[rgba(240,138,93,0.18)] bg-[rgba(255,255,255,0.55)] p-4">
+          <p className="text-[10px] uppercase tracking-[0.3em] text-[rgba(95,66,48,0.45)]">????</p>
+          <p className="mt-2 text-[1.1rem] font-semibold text-[rgba(91,61,42,0.88)]">{active.kicker}</p>
+          <p className="mt-2 text-[13px] leading-5 text-[rgba(91,61,42,0.64)]">{active.summary}</p>
+          <p className="mt-3 text-[12px] tracking-[0.2em] text-[rgba(95,66,48,0.42)]">
+            {String(current + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+          </p>
+        </div>
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          <button className="control-chip justify-center" onClick={onPrev} type="button">???</button>
+          <button className="control-chip justify-center" onClick={onNext} type="button">???</button>
+        </div>
+      </div>
+    </div>
   );
 }
 
