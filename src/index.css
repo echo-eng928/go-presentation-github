@@ -849,40 +849,6 @@ body {
   --theme-board-border: rgba(255,255,255,0.08);
 }
 
-.theme-shell.theme-aurora {
-  --theme-page-bg: linear-gradient(180deg, #edf5ff 0%, #dcecff 54%, #c7dff5 100%);
-  --theme-stage-bg: linear-gradient(135deg, #dcecff 0%, #d2e5fb 58%, #bfd8f2 100%);
-  --theme-stage-border: rgba(255,255,255,0.45);
-  --theme-shell-border: rgba(93, 136, 186, 0.18);
-  --theme-stage-halo: radial-gradient(circle, rgba(162, 205, 248, 0.5), transparent 68%);
-  --theme-backdrop-base: radial-gradient(circle at top, rgba(255,255,255,0.86), transparent 34%), radial-gradient(circle at 80% 22%, rgba(115,179,255,0.18), transparent 26%), radial-gradient(circle at 18% 78%, rgba(183,240,228,0.32), transparent 28%), linear-gradient(135deg, #edf5ff 0%, #dcecff 48%, #c7dff5 100%);
-  --theme-backdrop-top: rgba(186, 220, 255, 0.34);
-  --theme-backdrop-bottom: rgba(102, 171, 255, 0.18);
-  --theme-stage-wash: linear-gradient(180deg, rgba(255,255,255,0.28), transparent 18%, transparent 82%, rgba(255,255,255,0.16));
-  --theme-ring-a: rgba(255,255,255,0.48);
-  --theme-ring-b: rgba(120,176,255,0.22);
-  --theme-glow-a: rgba(115,179,255,0.16);
-  --theme-glow-b: rgba(183,240,228,0.34);
-  --theme-rail-bg: rgba(242,249,255,0.26);
-  --theme-rail-border: rgba(255,255,255,0.24);
-  --theme-rail-text: rgba(58,83,110,0.76);
-  --theme-panel-bg: rgba(231,242,255,0.88);
-  --theme-panel-border: rgba(255,255,255,0.5);
-  --theme-panel-shadow: 0 12px 28px rgba(95, 141, 204, 0.12);
-  --theme-control-bg: rgba(240,248,255,0.84);
-  --theme-control-border: rgba(255,255,255,0.58);
-  --theme-control-text: rgba(58,83,110,0.88);
-  --theme-card-bg: linear-gradient(180deg, rgba(93,136,186,0.2), rgba(93,136,186,0.12));
-  --theme-card-border: rgba(255,255,255,0.42);
-  --theme-card-shadow: 0 12px 28px rgba(95,141,204,0.12);
-  --theme-accent-text: #4f84d9;
-  --theme-text-primary: rgba(51,74,97,0.94);
-  --theme-text-secondary: rgba(66,94,124,0.84);
-  --theme-text-muted: rgba(79,108,137,0.52);
-  --theme-grid-line: rgba(102, 145, 196, 0.38);
-  --theme-board-bg: linear-gradient(145deg, rgba(222, 239, 255, 0.96), rgba(188, 218, 246, 0.92));
-  --theme-board-border: rgba(255,255,255,0.55);
-}
 
 .theme-shell {
   background: var(--theme-page-bg);
@@ -1080,9 +1046,6 @@ body {
   background: linear-gradient(135deg, #171110, #c7aa80);
 }
 
-.theme-chip-swatch-aurora {
-  background: linear-gradient(135deg, #edf5ff, #6aa9ff);
-}
 
 
 .presentation-stage-frame {
