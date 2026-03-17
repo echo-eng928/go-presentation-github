@@ -330,11 +330,6 @@ function App() {
     if (!(target instanceof Element)) return;
     if (window.getSelection && !window.getSelection()?.isCollapsed) return;
     if (target.closest("button, a, input, textarea, select, [data-card-id], .control-chip, .theme-control-panel")) return;
-    if (isFullscreen) {
-      clearControlsHideTimer();
-      setAreControlsVisible(false);
-      return;
-    }
     step(1);
   };
   const toggleFullscreen = async () => {
