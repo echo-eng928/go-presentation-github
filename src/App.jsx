@@ -116,9 +116,11 @@ function App() {
     return window.localStorage.getItem("presentation-theme") || DEFAULT_THEME;
   });
   const [selectedCardId, setSelectedCardId] = useState("");
+  const [areControlsVisible, setAreControlsVisible] = useState(true);
   const lockRef = useRef(false);
   const stageRef = useRef(null);
   const exportPageRefs = useRef([]);
+  const controlsHideTimerRef = useRef(null);
 
   const active = slideMeta[index];
   const progress = useMemo(() => ((index + 1) / slideMeta.length) * 100, [index]);
@@ -141,6 +143,23 @@ function App() {
     goTo(next);
   };
 
+  const clearControlsHideTimer = () => {
+    if (controlsHideTimerRef.current) {
+      window.clearTimeout(controlsHideTimerRef.current);
+      controlsHideTimerRef.current = null;
+    }
+  };
+
+  const revealControls = (autoHide = false) => {
+    setAreControlsVisible(true);
+    clearControlsHideTimer();
+    if (autoHide) {
+      controlsHideTimerRef.current = window.setTimeout(() => {
+        setAreControlsVisible(false);
+      }, 2200);
+    }
+  };
+
   useEffect(() => {
     if (!isAutoplay) return undefined;
     const timer = window.setInterval(() => {
@@ -156,6 +175,8 @@ function App() {
     document.addEventListener("fullscreenchange", onFullscreen);
     return () => document.removeEventListener("fullscreenchange", onFullscreen);
   }, []);
+
+  useEffect(() => () => clearControlsHideTimer(), []);
 
   useEffect(() => {
     const onResize = () => {
@@ -173,6 +194,29 @@ function App() {
   useEffect(() => {
     window.localStorage.setItem("presentation-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (!isFullscreen) {
+      clearControlsHideTimer();
+      setAreControlsVisible(true);
+      return undefined;
+    }
+
+    revealControls(true);
+
+    const onPointerActivity = () => {
+      revealControls(true);
+    };
+
+    window.addEventListener("mousemove", onPointerActivity, { passive: true });
+    window.addEventListener("touchstart", onPointerActivity, { passive: true });
+
+    return () => {
+      window.removeEventListener("mousemove", onPointerActivity);
+      window.removeEventListener("touchstart", onPointerActivity);
+      clearControlsHideTimer();
+    };
+  }, [isFullscreen]);
 
   useEffect(() => {
     const onKeyDown = (event) => {
@@ -285,7 +329,12 @@ function App() {
     const target = event.target;
     if (!(target instanceof Element)) return;
     if (window.getSelection && !window.getSelection()?.isCollapsed) return;
-    if (target.closest("button, a, input, textarea, select, [data-card-id], .control-chip")) return;
+    if (target.closest("button, a, input, textarea, select, [data-card-id], .control-chip, .theme-control-panel")) return;
+    if (isFullscreen) {
+      clearControlsHideTimer();
+      setAreControlsVisible(false);
+      return;
+    }
     step(1);
   };
   const toggleFullscreen = async () => {
@@ -322,6 +371,7 @@ function App() {
                 theme={theme}
                 onThemeChange={setTheme}
                 compact={isCompactViewport}
+                visible={areControlsVisible}
               />
               <div className={`slide-stage-content absolute inset-0 z-10 pl-20 pr-24 ${isCompactViewport ? "slide-stage-content-compact" : ""}`}>
                 <AnimatePresence initial={false} mode="wait" custom={direction}>
@@ -508,9 +558,9 @@ function ExportTopInfo({ active }) {
     </>
   );
 }
-function ControlPanel({ isAutoplay, isFullscreen, onAutoplay, onFullscreen, onPrint, isExporting, theme, onThemeChange, compact = false }) {
+function ControlPanel({ isAutoplay, isFullscreen, onAutoplay, onFullscreen, onPrint, isExporting, theme, onThemeChange, compact = false, visible = true }) {
   return (
-    <div className={`theme-control-panel absolute z-30 flex gap-3 ${compact ? "left-4 right-4 bottom-4 flex-row flex-wrap items-start justify-start" : "right-6 top-24 flex-col"}`}>
+    <div className={`theme-control-panel absolute z-30 flex gap-3 transition-all duration-300 ${visible ? "opacity-100 translate-y-0" : "pointer-events-none opacity-0 translate-y-2"} ${compact ? "left-4 right-4 bottom-4 flex-row flex-wrap items-start justify-start" : "right-6 top-24 flex-col"}`}>
       <button className="control-chip" onClick={onAutoplay} type="button">
         <span className={`status-dot ${isAutoplay ? "status-dot-active" : ""}`} />
         {isAutoplay ? "Pause Auto" : "Auto Play"}
